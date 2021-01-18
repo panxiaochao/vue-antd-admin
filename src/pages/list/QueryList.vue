@@ -79,7 +79,7 @@
       </a-form>
     </div>
     <div>
-      <div class="operator">
+      <a-space class="operator">
         <a-button @click="addNew" type="primary">新建</a-button>
         <a-button >批量操作</a-button>
         <a-dropdown>
@@ -91,19 +91,42 @@
             更多操作 <a-icon type="down" />
           </a-button>
         </a-dropdown>
-      </div>
+      </a-space>
       <standard-table
         :columns="columns"
         :dataSource="dataSource"
-        :selectedRows="selectedRows"
-        @change="onchange"
-      />
+        :selectedRows.sync="selectedRows"
+        @clear="onClear"
+        @change="onChange"
+        @selectedRowChange="onSelectChange"
+      >
+        <div slot="description" slot-scope="{text}">
+          {{text}}
+        </div>
+        <div slot="action" slot-scope="{text, record}">
+          <a style="margin-right: 8px">
+            <a-icon type="plus"/>新增
+          </a>
+          <a style="margin-right: 8px">
+            <a-icon type="edit"/>编辑
+          </a>
+          <a @click="deleteRecord(record.key)">
+            <a-icon type="delete" />删除1
+          </a>
+          <a @click="deleteRecord(record.key)" v-auth="`delete`">
+            <a-icon type="delete" />删除2
+          </a>
+        </div>
+        <template slot="statusTitle">
+          <a-icon @click.native="onStatusTitleClick" type="info-circle" />
+        </template>
+      </standard-table>
     </div>
   </a-card>
 </template>
 
 <script>
-import StandardTable from '../../components/table/StandardTable'
+import StandardTable from '@/components/table/StandardTable'
 const columns = [
   {
     title: '规则编号',
@@ -111,7 +134,8 @@ const columns = [
   },
   {
     title: '描述',
-    dataIndex: 'description'
+    dataIndex: 'description',
+    scopedSlots: { customRender: 'description' }
   },
   {
     title: '服务调用次数',
@@ -121,14 +145,18 @@ const columns = [
     customRender: (text) => text + ' 次'
   },
   {
-    title: '状态',
     dataIndex: 'status',
-    needTotal: true
+    needTotal: true,
+    slots: {title: 'statusTitle'}
   },
   {
     title: '更新时间',
     dataIndex: 'updatedAt',
     sorter: true
+  },
+  {
+    title: '操作',
+    scopedSlots: { customRender: 'action' }
   }
 ]
 
@@ -153,21 +181,35 @@ export default {
       advanced: true,
       columns: columns,
       dataSource: dataSource,
-      selectedRowKeys: [],
       selectedRows: []
     }
   },
+  authorize: {
+    deleteRecord: 'delete'
+  },
   methods: {
+    deleteRecord(key) {
+      this.dataSource = this.dataSource.filter(item => item.key !== key)
+      this.selectedRows = this.selectedRows.filter(item => item.key !== key)
+    },
     toggleAdvanced () {
       this.advanced = !this.advanced
     },
-    onchange (selectedRowKeys, selectedRows) {
-      this.selectedRowKeys = selectedRowKeys
-      this.selectedRows = selectedRows
-    },
     remove () {
-      this.dataSource = this.dataSource.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
-      this.selectedRows = this.selectedRows.filter(item => this.selectedRowKeys.indexOf(item.key) < 0)
+      this.dataSource = this.dataSource.filter(item => this.selectedRows.findIndex(row => row.key === item.key) === -1)
+      this.selectedRows = []
+    },
+    onClear() {
+      this.$message.info('您清空了勾选的所有行')
+    },
+    onStatusTitleClick() {
+      this.$message.info('你点击了状态栏表头')
+    },
+    onChange() {
+      this.$message.info('表格状态改变了')
+    },
+    onSelectChange() {
+      this.$message.info('选中行改变了')
     },
     addNew () {
       this.dataSource.unshift({

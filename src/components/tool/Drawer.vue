@@ -1,14 +1,14 @@
 <template>
   <div >
-    <div :class="['mask', openDrawer ? 'open' : 'close']" @click="close"></div>
-    <div :class="['drawer', placement, openDrawer ? 'open' : 'close']">
-      <div ref="drawer" style="position: relative; height: 100%;">
+    <div :class="['mask', visible ? 'open' : 'close']" @click="close"></div>
+    <div :class="['drawer', placement, visible ? 'open' : 'close']">
+      <div ref="drawer" class="content beauty-scroll">
         <slot></slot>
       </div>
-      <div v-if="showHandler" :class="['handler-container', placement]" ref="handler" @click="handle">
+      <div v-if="showHandler" :class="['handler-container', placement, visible ? 'open' : 'close']" ref="handler" @click="toggle">
         <slot v-if="$slots.handler" name="handler"></slot>
         <div v-else class="handler">
-          <a-icon :type="openDrawer ? 'close'  : 'bars'" />
+          <a-icon :type="visible ? 'close'  : 'bars'" />
         </div>
       </div>
     </div>
@@ -20,11 +20,14 @@ export default {
   name: 'Drawer',
   data () {
     return {
-      drawerWidth: 0
     }
   },
+  model: {
+    prop: 'visible',
+    event: 'change'
+  },
   props: {
-    openDrawer: {
+    visible: {
       type: Boolean,
       required: false,
       default: false
@@ -40,18 +43,6 @@ export default {
       default: true
     }
   },
-  mounted () {
-    this.drawerWidth = this.getDrawerWidth()
-  },
-  watch: {
-    'drawerWidth': function (val) {
-      if (this.placement === 'left') {
-        this.$refs.handler.style.left = val + 'px'
-      } else {
-        this.$refs.handler.style.right = val + 'px'
-      }
-    }
-  },
   methods: {
     open () {
       this.$emit('change', true)
@@ -59,11 +50,8 @@ export default {
     close () {
       this.$emit('change', false)
     },
-    handle () {
-      this.$emit('change', !this.openDrawer)
-    },
-    getDrawerWidth () {
-      return this.$refs.drawer.clientWidth
+    toggle () {
+      this.$emit('change', !this.visible)
     }
   }
 }
@@ -72,9 +60,11 @@ export default {
 <style lang="less" scoped>
   .mask{
     position: fixed;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.2);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    background-color: @shadow-color;
     transition: all 0.5s;
     z-index: 100;
     &.open{
@@ -86,13 +76,15 @@ export default {
   }
   .drawer{
     position: fixed;
-    height: 100%;
     transition: all 0.5s;
+    height: 100vh;
     z-index: 100;
     &.left{
       left: 0px;
       &.open{
-        box-shadow: 2px 0 8px rgba(0,0,0,.15);
+        .content{
+          box-shadow: 2px 0 8px @shadow-color;
+        }
       }
       &.close{
         transform: translateX(-100%);
@@ -100,38 +92,48 @@ export default {
     }
     &.right{
       right: 0px;
+      .content{
+        float: right;
+      }
       &.open{
-        box-shadow: -2px 0 8px rgba(0,0,0,.15);
+        .content{
+          box-shadow: -2px 0 8px @shadow-color;
+        }
       }
       &.close{
         transform: translateX(100%);
       }
     }
-    .sider{
-      height: 100%;
-    }
+  }
+  .content{
+    display: inline-block;
+    height: 100vh;
+    overflow-y: auto;
   }
   .handler-container{
-    position: fixed;
-    top: 200px;
+    position: absolute;
+    display: inline-block;
     text-align: center;
     transition: all 0.5s;
     cursor: pointer;
+    top: 200px;
+    z-index: 100;
     .handler {
       height: 40px;
       width: 40px;
-      background-color: #fff;
-      z-index: 100;
+      background-color: @base-bg-color;
       font-size: 26px;
-      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 2px 8px @shadow-color;
       line-height: 40px;
     }
     &.left{
+      right: -40px;
       .handler{
         border-radius: 0 5px 5px 0;
       }
     }
     &.right{
+      left: -40px;
       .handler{
         border-radius: 5px 0 0 5px;
       }

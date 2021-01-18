@@ -1,5 +1,5 @@
 <template>
-  <a-card :body-style="{padding: '20px 24px 8px'}" :bordered="false">
+  <a-card :loading="loading" :body-style="{padding: '20px 24px 8px'}" :bordered="false">
     <div class="chart-card-header">
       <div class="meta">
         <span class="chart-card-title">{{title}}</span>
@@ -23,11 +23,11 @@
 <script>
 export default {
   name: 'ChartCard',
-  props: ['title', 'total']
+  props: ['title', 'total', 'loading']
 }
 </script>
 
-<style scoped>
+<style scoped lang="less">
   .chart-card-header{
     position: relative;
     overflow: hidden;
@@ -37,7 +37,7 @@ export default {
     position: relative;
     overflow: hidden;
     width: 100%;
-    color: rgba(0,0,0,.45);
+    color: @text-color-second;
     font-size: 14px;
     line-height: 22px;
   }
@@ -52,7 +52,6 @@ export default {
     text-overflow: ellipsis;
     word-break: break-all;
     white-space: nowrap;
-    color: #000;
     margin-top: 4px;
     margin-bottom: 0;
     font-size: 30px;
@@ -60,7 +59,7 @@ export default {
     height: 38px;
   }
   .chart-card-footer{
-    border-top: 1px solid #e8e8e8;
+    border-top: 1px solid @border-color-base;
     padding-top: 9px;
     margin-top: 8px;
   }

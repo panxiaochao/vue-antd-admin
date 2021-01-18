@@ -1,47 +1,53 @@
-# vue-antd-admin
-**[Ant Design Pro](https://github.com/ant-design/ant-design-pro) 的 Vue 实现**
+简体中文 | [English](./README.en-US.md)
+<h1 align="center">Vue Antd Admin</h1>
 
-一个开箱即用的中后台前端/设计解决方案（主要依赖组件库 [ant-design-vue](https://github.com/vueComponent/ant-design-vue) ）
+<div align="center">
+  
+[Ant Design Pro](https://github.com/ant-design/ant-design-pro) 的 Vue 实现版本  
+开箱即用的中后台前端/设计解决方案
 
-[预览地址](https://iczer.gitee.io/vue-antd-pro)
+[![MIT](https://img.shields.io/github/license/iczer/vue-antd-admin)](https://github.com/iczer/vue-antd-admin/blob/master/LICENSE)
+[![Dependence](https://img.shields.io/david/iczer/vue-antd-admin)](https://david-dm.org/iczer/vue-antd-admin)
+[![DevDependencies](https://img.shields.io/david/dev/iczer/vue-antd-admin)](https://david-dm.org/iczer/vue-antd-admin?type=dev)
+[![Release](https://img.shields.io/github/v/release/iczer/vue-antd-admin)](https://github.com/iczer/vue-antd-admin/releases/latest)
+![image](./src/assets/img/preview.png)  
 
-![](https://github.com/iczer/vue-antd-admin/blob/master/static/img/preview.jpg)
-## 环境
-* node -- 运行/编译
-* yarn -- 依赖管理
-* webpack -- 打包
-* eslint -- 代码规约
-* vue-cli -- 构建
-## 依赖
-* @antv/data-set: ^0.8.9
-* ant-design-vue: ^1.0.3
-* axios: ^0.18.0
-* clipboard: ^2.0.1
-* date-fns: ^1.29.0
-* enquire.js: ^2.1.6
-* mockjs: ^1.0.1-beta3
-* pouchdb: ^7.0.0
-* viser-vue: ^2.2.5
-* vue: ^2.5.17
-* vue-router: ^3.0.1
-* vuedraggable: ^2.16.0
-* vuex: ^3.0.1
-## 安装
-克隆项目到本地:
-```
+多种主题模式可选：  
+![image](./src/assets/img/preview-nine.png)
+</div>
+
+- 预览地址：https://iczer.gitee.io/vue-antd-admin
+- 使用文档：https://iczer.gitee.io/vue-antd-admin-docs
+- 常见问题：https://iczer.gitee.io/vue-antd-admin-docs/start/faq.html
+- 国内镜像：https://gitee.com/iczer/vue-antd-admin
+
+## 浏览器支持
+现代浏览器及 IE10
+
+| [<img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/edge/edge_48x48.png" alt="IE / Edge" width="24px" height="24px" />](http://godban.github.io/browsers-support-badges/)</br>IE / Edge | [<img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/firefox/firefox_48x48.png" alt="Firefox" width="24px" height="24px" />](http://godban.github.io/browsers-support-badges/)</br>Firefox | [<img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/chrome/chrome_48x48.png" alt="Chrome" width="24px" height="24px" />](http://godban.github.io/browsers-support-badges/)</br>Chrome | [<img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/safari/safari_48x48.png" alt="Safari" width="24px" height="24px" />](http://godban.github.io/browsers-support-badges/)</br>Safari | [<img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/opera/opera_48x48.png" alt="Opera" width="24px" height="24px" />](http://godban.github.io/browsers-support-badges/)</br>Opera |
+| --- | --- | --- | --- | --- |
+| IE10, Edge | last 2 versions | last 2 versions | last 2 versions | last 2 versions |
+
+## 使用
+### clone
+```bash
 $ git clone https://github.com/iczer/vue-antd-admin.git
 ```
-安装依赖：
-```
+### yarn
+```bash
 $ yarn install
+$ yarn serve
 ```
-## 启动
+### or npm
 ```
-$ yarn start
+$ npm install
+$ npm run serve
 ```
-## 文档
-编写中...
-## 说明
-该项目由仓主在业余由兴趣驱动完成，仍在不断开发完善中。详见：[开发进度](https://github.com/iczer/vue-antd-admin/projects/1)
+更多信息参考 [使用文档](https://iczer.gitee.io/vue-antd-admin-docs)
 
-如有任何疑问或功能需求，欢迎 [Issue](https://github.com/iczer/vue-antd-admin/issues)。
+## 参与贡献
+我们非常欢迎你的贡献，你可以通过以下方式和我们一起共建 :star2:：
+- 在你的公司或个人项目中使用 Vue Antd Admin。
+- 通过 [Issue](https://github.com/iczer/vue-antd-admin/issues) 报告:bug:或进行咨询。
+- 提交 [Pull Request](https://github.com/iczer/vue-antd-admin/pulls) 改进 Admin 的代码。
+- 加入社群，与小伙伴们一同交流心得。QQ群：812277510、610090280（已满）

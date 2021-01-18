@@ -1,7 +1,14 @@
 <template>
-  <a-menu :style="style" class="contextmenu" v-show="visible" @click="handleClick" :selectedKeys="selectedKeys">
+  <a-menu
+    v-show="visible"
+    class="contextmenu"
+    :style="style"
+    :selectedKeys="selectedKeys"
+    @click="handleClick"
+  >
     <a-menu-item :key="item.key" v-for="item in itemList">
-      <a-icon role="menuitemicon" v-if="item.icon" :type="item.icon" />{{item.text}}
+      <a-icon v-if="item.icon" :type="item.icon" />
+      <span>{{ item.text }}</span>
     </a-menu-item>
   </a-menu>
 </template>
@@ -26,6 +33,7 @@ export default {
       left: 0,
       top: 0,
       target: null,
+      meta: null,
       selectedKeys: []
     }
   },
@@ -38,23 +46,26 @@ export default {
     }
   },
   created () {
-    window.addEventListener('mousedown', e => this.closeMenu(e))
-    window.addEventListener('contextmenu', e => this.setPosition(e))
+    window.addEventListener('click', this.closeMenu)
+    window.addEventListener('contextmenu', this.setPosition)
+  },
+  beforeDestroy() {
+    window.removeEventListener('click', this.closeMenu)
+    window.removeEventListener('contextmenu', this.setPosition)
   },
   methods: {
-    closeMenu (e) {
-      if (['menuitemicon', 'menuitem'].indexOf(e.target.getAttribute('role')) < 0) {
-        this.$emit('update:visible', false)
-      }
+    closeMenu () {
+      this.$emit('update:visible', false)
     },
     setPosition (e) {
       this.left = e.clientX
       this.top = e.clientY
       this.target = e.target
+      this.meta = e.meta
     },
-    handleClick ({key}) {
-      this.$emit('select', key, this.target)
-      this.$emit('update:visible', false)
+    handleClick ({ key }) {
+      this.$emit('select', key, this.target, this.meta)
+      this.closeMenu()
     }
   }
 }
@@ -63,9 +74,11 @@ export default {
 <style lang="less" scoped>
   .contextmenu{
     position: fixed;
-    z-index: 1;
-    border: 1px solid #9e9e9e;
+    z-index: 1000;
     border-radius: 4px;
-    box-shadow: 2px 2px 10px #aaaaaa !important;
+    box-shadow: -4px 4px 16px 1px @shadow-color !important;
+  }
+  .ant-menu-item {
+    margin: 0 !important // 菜单项之间的缝隙会影响点击
   }
 </style>

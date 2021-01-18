@@ -1,14 +1,21 @@
 <template>
-    <exception-page type="500" />
+  <exception-page home-route="/dashboard/workplace" :style="`min-height: ${minHeight}`" type="500" />
 </template>
 
 <script>
-import ExceptionPage from '../../components/exception/ExceptionPage'
+import ExceptionPage from '@/components/exception/ExceptionPage'
+import {mapState} from 'vuex'
 export default {
-  components: {ExceptionPage}
+  name: 'Exp500',
+  components: {ExceptionPage},
+  computed: {
+    ...mapState('setting', ['pageMinHeight']),
+    minHeight() {
+      return this.pageMinHeight ? this.pageMinHeight + 'px' : '100vh'
+    }
+  }
 }
 </script>
 
-<style scoped>
-
+<style scoped lang="less">
 </style>

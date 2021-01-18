@@ -1,10 +1,12 @@
 <template>
-  <div class="img-check-box" @click="toggle">
-    <img :src="img" />
-    <div v-if="sChecked" class="check-item">
-      <a-icon type="check" />
+  <a-tooltip :title="title" :overlayStyle="{zIndex: 2001}">
+    <div class="img-check-box" @click="toggle">
+      <img :src="img" />
+      <div v-if="sChecked" class="check-item">
+        <a-icon type="check" />
+      </div>
     </div>
-  </div>
+  </a-tooltip>
 </template>
 
 <script>
@@ -34,22 +36,25 @@ const Group = {
     }
   },
   watch: {
-    'values': function (newVal, oldVal) {
-      // 此条件是为解决单选时，触发两次chang事件问题
-      if (!(newVal.length === 1 && oldVal.length === 1 && newVal[0] === oldVal[0])) {
-        this.$emit('change', this.values)
-      }
+    'values': function (value) {
+      this.$emit('change', value)
+      // // 此条件是为解决单选时，触发两次chang事件问题
+      // if (!(newVal.length === 1 && oldVal.length === 1 && newVal[0] === oldVal[0])) {
+      //   this.$emit('change', this.values)
+      // }
     }
   },
   methods: {
     handleChange (option) {
       if (!option.checked) {
-        this.values = this.values.filter(item => item !== option.value)
+        if (this.values.indexOf(option.value) > -1) {
+          this.values = this.values.filter(item => item != option.value)
+        }
       } else {
         if (!this.multiple) {
           this.values = [option.value]
           this.options.forEach(item => {
-            if (item.value !== option.value) {
+            if (item.value != option.value) {
               item.sChecked = false
             }
           })
@@ -85,16 +90,17 @@ export default {
     },
     value: {
       required: true
-    }
+    },
+    title: String
   },
   data () {
     return {
-      sChecked: this.checked
+      sChecked: this.initChecked()
     }
   },
   inject: ['groupContext'],
   watch: {
-    'sChecked': function (val) {
+    'sChecked': function () {
       const option = {
         value: this.value,
         checked: this.sChecked
@@ -115,7 +121,19 @@ export default {
   },
   methods: {
     toggle () {
-      this.sChecked = !this.sChecked
+      if (this.groupContext.multiple || !this.sChecked) {
+        this.sChecked = !this.sChecked
+      }
+    },
+    initChecked() {
+      let groupContext = this.groupContext
+      if (!groupContext) {
+        return this.checked
+      }else if (groupContext.multiple) {
+        return groupContext.defaultValues.indexOf(this.value) > -1
+      } else {
+        return groupContext.defaultValues[0] == this.value
+      }
     }
   }
 }
@@ -135,7 +153,7 @@ export default {
       padding-top: 15px;
       padding-left: 24px;
       height: 100%;
-      color: #1890ff;
+      color: @primary-color;
       font-size: 14px;
       font-weight: bold;
     }

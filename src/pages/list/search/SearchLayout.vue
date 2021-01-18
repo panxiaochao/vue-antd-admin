@@ -1,8 +1,8 @@
 <template>
     <div>
-      <div class="search-head">
+      <div :class="['search-head', layout, pageWidth]">
         <div class="search-input">
-          <a-input-search style="width: 522px" placeholder="请输入..." size="large" enterButton="搜索" />
+          <a-input-search class="search-ipt" style="width: 522px" placeholder="请输入..." size="large" enterButton="搜索" />
         </div>
         <div style="padding: 0 24px">
           <a-tabs :tabBarStyle="{margin: 0}" @change="navigate" :activeKey="activeKey">
@@ -19,9 +19,11 @@
 </template>
 
 <script>
+import {mapState} from 'vuex'
 export default {
   name: 'SearchLayout',
   computed: {
+    ...mapState('setting', ['layout', 'pageWidth']),
     activeKey () {
       switch (this.$route.path) {
         case '/list/search/article':
@@ -57,8 +59,11 @@ export default {
 
 <style lang="less" scoped>
   .search-head{
-    background-color: #fff;
-    margin: -25px -24px -24px;
+    background-color: @base-bg-color;
+    margin: -24px;
+    &.head.fixed{
+      margin: -24px 0;
+    }
     .search-input{
       text-align: center;
     }

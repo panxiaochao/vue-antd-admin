@@ -42,22 +42,21 @@ const Group = {
     }
   },
   watch: {
-    values: function (newVal, oldVal) {
-      // 此条件是为解决单选时，触发两次chang事件问题
-      if (!(newVal.length === 1 && oldVal.length === 1 && newVal[0] === oldVal[0]) || this.multiple) {
-        this.$emit('change', this.values, this.colors)
-      }
+    values(value) {
+      this.$emit('change', value, this.colors)
     }
   },
   methods: {
     handleChange (option) {
       if (!option.checked) {
-        this.values = this.values.filter(item => item !== option.value)
+        if (this.values.indexOf(option.value) > -1) {
+          this.values = this.values.filter(item => item != option.value)
+        }
       } else {
         if (!this.multiple) {
           this.values = [option.value]
           this.options.forEach(item => {
-            if (item.value !== option.value) {
+            if (item.value != option.value) {
               item.sChecked = false
             }
           })
@@ -86,7 +85,7 @@ export default {
       required: true
     },
     value: {
-      type: String,
+      type: [String, Number],
       required: true
     },
     checked: {
@@ -97,12 +96,14 @@ export default {
   },
   data () {
     return {
-      sChecked: this.checked
+      sChecked: this.initChecked()
     }
+  },
+  computed: {
   },
   inject: ['groupContext'],
   watch: {
-    'sChecked': function (val) {
+    'sChecked': function () {
       const value = {
         value: this.value,
         color: this.color,
@@ -118,13 +119,24 @@ export default {
   created () {
     const groupContext = this.groupContext
     if (groupContext) {
-      this.sChecked = groupContext.defaultValues.indexOf(this.value) >= 0
       groupContext.options.push(this)
     }
   },
   methods: {
     toggle () {
-      this.sChecked = !this.sChecked
+      if (this.groupContext.multiple || !this.sChecked) {
+        this.sChecked = !this.sChecked
+      }
+    },
+    initChecked() {
+      let groupContext = this.groupContext
+      if (!groupContext) {
+        return this.checked
+      }else if (groupContext.multiple) {
+        return groupContext.defaultValues.indexOf(this.value) > -1
+      } else {
+        return groupContext.defaultValues[0] == this.value
+      }
     }
   }
 }
@@ -139,7 +151,7 @@ export default {
     cursor: pointer;
     margin-right: 8px;
     text-align: center;
-    color: #fff;
+    color: @base-bg-color;
     font-weight: bold;
   }
 </style>

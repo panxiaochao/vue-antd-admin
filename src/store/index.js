@@ -1,13 +1,8 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import account from './modules/account'
-import setting from './modules/setting'
+import modules from './modules'
 
 Vue.use(Vuex)
+const store = new Vuex.Store({modules})
 
-export default new Vuex.Store({
-  modules: {
-    account,
-    setting
-  }
-})
+export default store

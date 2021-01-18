@@ -1,32 +1,30 @@
-// The Vue build version to load with the `import` command
-// (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue'
-import App from './App'
-import router from './router/lazy'
-import 'ant-design-vue/dist/antd.css'
+import App from './App.vue'
+import {initRouter} from './router'
+import './theme/index.less'
 import Antd from 'ant-design-vue'
 import Viser from 'viser-vue'
-import axios from 'axios'
 import '@/mock'
 import store from './store'
-import PouchDB from 'pouchdb'
+import 'animate.css/source/animate.css'
+import Plugins from '@/plugins'
+import {initI18n} from '@/utils/i18n'
+import bootstrap from '@/bootstrap'
+import 'moment/locale/zh-cn'
 
-Vue.prototype.$axios = axios
+const router = initRouter(store.state.setting.asyncRoutes)
+const i18n = initI18n('CN', 'US')
+
+Vue.use(Antd)
 Vue.config.productionTip = false
 Vue.use(Viser)
-Vue.use(Antd)
+Vue.use(Plugins)
 
-/* eslint-disable no-new */
+bootstrap({router, store, i18n, message: Vue.prototype.$message})
+
 new Vue({
-  el: '#app',
   router,
   store,
-  components: { App },
-  template: '<App/>',
-  mounted () {
-    var db = new PouchDB('admindb')
-    db.get('currUser').then(doc => {
-      this.$store.commit('account/setuser', doc.user)
-    })
-  }
-})
+  i18n,
+  render: h => h(App),
+}).$mount('#app')

@@ -1,35 +1,47 @@
 /**
  * 该插件可根据菜单配置自动生成 ANTD menu组件
- * menuData示例：
+ * menuOptions示例：
  * [
  *  {
- *    title: '菜单标题',
- *    icon: '菜单图标',
+ *    name: '菜单名称',
  *    path: '菜单路由',
- *    invisible: 'boolean, 是否不可见',
+ *    meta: {
+ *      icon: '菜单图标',
+ *      invisible: 'boolean, 是否不可见, 默认 false',
+ *    },
  *    children: [子菜单配置]
  *  },
  *  {
- *    title: '菜单标题',
- *    icon: '菜单图标',
+ *    name: '菜单名称',
  *    path: '菜单路由',
- *    invisible: 'boolean, 是否不可见',
+ *    meta: {
+ *      icon: '菜单图标',
+ *      invisible: 'boolean, 是否不可见, 默认 false',
+ *    },
  *    children: [子菜单配置]
  *  }
  * ]
+ *
+ * i18n: 国际化配置。系统默认会根据 options route配置的 path 和 name 生成英文以及中文的国际化配置，如需自定义或增加其他语言，配置
+ * 此项即可。如：
+ * i18n: {
+ *   messages: {
+ *     CN: {dashboard: {name: '监控中心'}}
+ *     HK: {dashboard: {name: '監控中心'}}
+ *   }
+ * }
  **/
 import Menu from 'ant-design-vue/es/menu'
-import Icon from 'ant-design-vue/es/icon/icon'
+import Icon from 'ant-design-vue/es/icon'
+import fastEqual from 'fast-deep-equal'
+import {getI18nKey} from '@/utils/routerUtil'
 
 const {Item, SubMenu} = Menu
-
-// 默认菜单图标数组，如果菜单没配置图标，则会设置从该数组随机取一个图标配置
-const iconArr = ['dashboard', 'user', 'form', 'setting', 'message', 'safety', 'bell', 'delete', 'code-o', 'poweroff', 'eye-o', 'hourglass']
 
 export default {
   name: 'IMenu',
   props: {
-    menuData: {
+    options: {
       type: Array,
       required: true
     },
@@ -47,116 +59,157 @@ export default {
       type: Boolean,
       required: false,
       default: false
-    }
+    },
+    i18n: Object,
+    openKeys: Array
   },
   data () {
     return {
-      openKeys: [],
       selectedKeys: [],
+      sOpenKeys: [],
       cachedOpenKeys: []
     }
   },
   computed: {
-    rootSubmenuKeys: (vm) => {
-      let keys = []
-      vm.menuData.forEach(item => {
-        keys.push(item.path)
-      })
-      return keys
+    menuTheme() {
+      return this.theme == 'light' ? this.theme : 'dark'
     }
   },
   created () {
     this.updateMenu()
+    if (this.options.length > 0 && !this.options[0].fullPath) {
+      this.formatOptions(this.options, '')
+    }
+    // 自定义国际化配置
+    if(this.i18n && this.i18n.messages) {
+      const messages = this.i18n.messages
+      Object.keys(messages).forEach(key => {
+        this.$i18n.mergeLocaleMessage(key, messages[key])
+      })
+    }
   },
   watch: {
+    options(val) {
+      if (val.length > 0 && !val[0].fullPath) {
+        this.formatOptions(this.options, '')
+      }
+    },
+    i18n(val) {
+      if(val && val.messages) {
+        const messages = this.i18n.messages
+        Object.keys(messages).forEach(key => {
+          this.$i18n.mergeLocaleMessage(key, messages[key])
+        })
+      }
+    },
     collapsed (val) {
       if (val) {
-        this.cachedOpenKeys = this.openKeys
-        this.openKeys = []
+        this.cachedOpenKeys = this.sOpenKeys
+        this.sOpenKeys = []
       } else {
-        this.openKeys = this.cachedOpenKeys
+        this.sOpenKeys = this.cachedOpenKeys
       }
     },
     '$route': function () {
       this.updateMenu()
+    },
+    sOpenKeys(val) {
+      this.$emit('openChange', val)
+      this.$emit('update:openKeys', val)
     }
   },
   methods: {
-    renderIcon: function (h, icon) {
-      return icon === 'none' ? null
-        : h(
-          Icon,
-          {
-            props: {type: icon !== undefined ? icon : iconArr[Math.floor((Math.random() * iconArr.length))]}
-          })
+    renderIcon: function (h, icon, key) {
+      if (this.$scopedSlots.icon && icon && icon !== 'none') {
+        const vnodes = this.$scopedSlots.icon({icon, key})
+        vnodes.forEach(vnode => {
+          vnode.data.class = vnode.data.class ? vnode.data.class : []
+          vnode.data.class.push('anticon')
+        })
+        return vnodes
+      }
+      return !icon || icon == 'none' ? null : h(Icon, {props: {type:  icon}})
     },
-    renderMenuItem: function (h, menu, pIndex, index) {
+    renderMenuItem: function (h, menu) {
+      let tag = 'router-link'
+      let config = {props: {to: menu.fullPath}, attrs: {style: 'overflow:hidden;white-space:normal;text-overflow:clip;'}}
+      if (menu.meta && menu.meta.link) {
+        tag = 'a'
+        config = {attrs: {style: 'overflow:hidden;white-space:normal;text-overflow:clip;', href: menu.meta.link, target: '_blank'}}
+      }
       return h(
-        Item,
-        {
-          key: menu.path ? menu.path : 'item_' + pIndex + '_' + index
-        },
+        Item, {key: menu.fullPath},
         [
-          h(
-            'a',
-            {attrs: {href: '#' + menu.path}},
+          h(tag, config,
             [
-              this.renderIcon(h, menu.icon),
-              h('span', [menu.name])
+              this.renderIcon(h, menu.meta ? menu.meta.icon : 'none', menu.fullPath),
+              this.$t(getI18nKey(menu.fullPath))
             ]
           )
         ]
       )
     },
-    renderSubMenu: function (h, menu, pIndex, index) {
-      var this2_ = this
-      var subItem = [h('span',
-        {slot: 'title'},
+    renderSubMenu: function (h, menu) {
+      let this_ = this
+      let subItem = [h('span', {slot: 'title', attrs: {style: 'overflow:hidden;white-space:normal;text-overflow:clip;'}},
         [
-          this.renderIcon(h, menu.icon),
-          h('span', [menu.name])
+          this.renderIcon(h, menu.meta ? menu.meta.icon : 'none', menu.fullPath),
+          this.$t(getI18nKey(menu.fullPath))
         ]
       )]
-      var itemArr = []
-      var pIndex_ = pIndex + '_' + index
-      menu.children.forEach(function (item, i) {
-        itemArr.push(this2_.renderItem(h, item, pIndex_, i))
+      let itemArr = []
+      menu.children.forEach(function (item) {
+        itemArr.push(this_.renderItem(h, item))
       })
-      return h(
-        SubMenu,
-        {key: menu.path ? menu.path : 'submenu_' + pIndex + '_' + index},
+      return h(SubMenu, {key: menu.fullPath},
         subItem.concat(itemArr)
       )
     },
-    renderItem: function (h, menu, pIndex, index) {
-      if (!menu.invisible) {
-        return menu.children ? this.renderSubMenu(h, menu, pIndex, index) : this.renderMenuItem(h, menu, pIndex, index)
+    renderItem: function (h, menu) {
+      const meta = menu.meta
+      if (!meta || !meta.invisible) {
+        let renderChildren = false
+        const children = menu.children
+        if (children != undefined) {
+          for (let i = 0; i < children.length; i++) {
+            const childMeta = children[i].meta
+            if (!childMeta || !childMeta.invisible) {
+              renderChildren = true
+              break
+            }
+          }
+        }
+        return (menu.children && renderChildren) ? this.renderSubMenu(h, menu) : this.renderMenuItem(h, menu)
       }
     },
     renderMenu: function (h, menuTree) {
-      var this2_ = this
-      var menuArr = []
+      let this_ = this
+      let menuArr = []
       menuTree.forEach(function (menu, i) {
-        menuArr.push(this2_.renderItem(h, menu, '0', i))
+        menuArr.push(this_.renderItem(h, menu, '0', i))
       })
       return menuArr
     },
-    onOpenChange (openKeys) {
-      const latestOpenKey = openKeys.find(key => this.openKeys.indexOf(key) === -1)
-      if (this.rootSubmenuKeys.indexOf(latestOpenKey) === -1) {
-        this.openKeys = openKeys
-      } else {
-        this.openKeys = latestOpenKey ? [latestOpenKey] : []
-      }
+    formatOptions(options, parentPath) {
+      options.forEach(route => {
+        let isFullPath = route.path.substring(0, 1) == '/'
+        route.fullPath = isFullPath ? route.path : parentPath + '/' + route.path
+        if (route.children) {
+          this.formatOptions(route.children, route.fullPath)
+        }
+      })
     },
     updateMenu () {
-      let routes = this.$route.matched.concat()
-      this.selectedKeys = [routes.pop().path]
-      let openKeys = []
-      routes.forEach((item) => {
-        openKeys.push(item.path)
-      })
-      this.collapsed || this.mode === 'horizontal' ? this.cachedOpenKeys = openKeys : this.openKeys = openKeys
+      const matchedRoutes = this.$route.matched.filter(item => item.path !== '')
+      this.selectedKeys = this.getSelectedKey(this.$route)
+      let openKeys = matchedRoutes.map(item => item.path)
+      openKeys = openKeys.slice(0, openKeys.length -1)
+      if (!fastEqual(openKeys, this.sOpenKeys)) {
+        this.collapsed || this.mode === 'horizontal' ? this.cachedOpenKeys = openKeys : this.sOpenKeys = openKeys
+      }
+    },
+    getSelectedKey (route) {
+      return route.matched.map(item => item.path)
     }
   },
   render (h) {
@@ -164,19 +217,21 @@ export default {
       Menu,
       {
         props: {
-          theme: this.$props.theme,
+          theme: this.menuTheme,
           mode: this.$props.mode,
-          openKeys: this.openKeys,
-          selectedKeys: this.selectedKeys
+          selectedKeys: this.selectedKeys,
+          openKeys: this.openKeys ? this.openKeys : this.sOpenKeys
         },
         on: {
-          openChange: this.onOpenChange,
-          select: (obj) => {
-            this.selectedKeys = obj.selectedKeys
+          'update:openKeys': (val) => {
+            this.sOpenKeys = val
+          },
+          click: (obj) => {
+            obj.selectedKeys = [obj.key]
             this.$emit('select', obj)
           }
         }
-      }, this.renderMenu(h, this.menuData)
+      }, this.renderMenu(h, this.options)
     )
   }
 }

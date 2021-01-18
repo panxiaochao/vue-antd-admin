@@ -1,120 +1,214 @@
 <template>
-  <a-layout-sider class="sider" width="273">
-    <setting-item title="整体风格设置">
-      <img-checkbox-group @change="setTheme">
-        <img-checkbox img="https://gw.alipayobjects.com/zos/rmsportal/LCkqqYNmvBEbokSDscrm.svg" :checked="true" value="dark"/>
-        <img-checkbox img="https://gw.alipayobjects.com/zos/rmsportal/jpRkZQMyYRryryPNtyIC.svg" value="light"/>
+  <div class="side-setting">
+    <setting-item>
+      <a-button @click="saveSetting" type="primary" icon="save">{{$t('save')}}</a-button>
+      <a-button @click="resetSetting" type="dashed" icon="redo" style="float: right">{{$t('reset')}}</a-button>
+    </setting-item>
+    <setting-item :title="$t('theme.title')">
+      <img-checkbox-group
+        @change="values => setTheme({...theme, mode: values[0]})"
+        :default-values="[theme.mode]"
+      >
+        <img-checkbox :title="$t('theme.dark')" img="https://gw.alipayobjects.com/zos/rmsportal/LCkqqYNmvBEbokSDscrm.svg" value="dark"/>
+        <img-checkbox :title="$t('theme.light')" img="https://gw.alipayobjects.com/zos/rmsportal/jpRkZQMyYRryryPNtyIC.svg" value="light"/>
+        <img-checkbox :title="$t('theme.night')" img="https://gw.alipayobjects.com/zos/antfincdn/hmKaLQvmY2/LCkqqYNmvBEbokSDscrm.svg" value="night"/>
       </img-checkbox-group>
     </setting-item>
-    <setting-item title="主题色">
-      <color-checkbox-group @change="onColorChange" :defaultValues="['1', '2', '3']" :multiple="false">
-        <color-checkbox ref="colorNode" color="rgb(245, 34, 45)" value="1" />
-        <color-checkbox color="rgb(250, 84, 28)" value="2" />
-        <color-checkbox color="rgb(250, 173, 20)" value="3" />
-        <color-checkbox color="rgb(19, 194, 194)" value="4" />
-        <color-checkbox color="rgb(82, 196, 26)" value="5" />
-        <color-checkbox color="rgb(24, 144, 255)" value="6" />
-        <color-checkbox color="rgb(47, 84, 235)" value="7" />
-        <color-checkbox color="rgb(114, 46, 209)" value="8" />
+    <setting-item :title="$t('theme.color')">
+      <color-checkbox-group
+        @change="(values, colors) => setTheme({...theme, color: colors[0]})"
+        :defaultValues="[palettes.indexOf(theme.color)]" :multiple="false"
+      >
+        <color-checkbox v-for="(color, index) in palettes" :key="index" :color="color" :value="index" />
       </color-checkbox-group>
     </setting-item>
     <a-divider/>
-    <setting-item title="导航设置">
-      <img-checkbox-group @change="setLayout">
-        <img-checkbox img="https://gw.alipayobjects.com/zos/rmsportal/JopDzEhOqwOjeNTXkoje.svg" :checked="true" value="side"/>
-        <img-checkbox img="https://gw.alipayobjects.com/zos/rmsportal/KDNDBbriJhLwuqMoxcAr.svg" value="head"/>
+    <setting-item :title="$t('navigate.title')">
+      <img-checkbox-group
+        @change="values => setLayout(values[0])"
+        :default-values="[layout]"
+      >
+        <img-checkbox :title="$t('navigate.side')" img="https://gw.alipayobjects.com/zos/rmsportal/JopDzEhOqwOjeNTXkoje.svg" value="side"/>
+        <img-checkbox :title="$t('navigate.head')" img="https://gw.alipayobjects.com/zos/rmsportal/KDNDBbriJhLwuqMoxcAr.svg" value="head"/>
+        <img-checkbox :title="$t('navigate.mix')" img="https://gw.alipayobjects.com/zos/antfincdn/x8Ob%26B8cy8/LCkqqYNmvBEbokSDscrm.svg" value="mix"/>
       </img-checkbox-group>
     </setting-item>
     <setting-item>
       <a-list :split="false">
         <a-list-item>
-          栅格模式
-          <a-select size="small" defaultValue="1" slot="actions" style="width: 80px">
-            <a-select-option value="1">流式</a-select-option>
-            <a-select-option value="2">定宽</a-select-option>
+          {{$t('navigate.content.title')}}
+          <a-select
+            :getPopupContainer="getPopupContainer"
+            :value="pageWidth"
+            @change="setPageWidth"
+            class="select-item" size="small" slot="actions"
+          >
+            <a-select-option value="fluid">{{$t('navigate.content.fluid')}}</a-select-option>
+            <a-select-option value="fixed">{{$t('navigate.content.fixed')}}</a-select-option>
           </a-select>
         </a-list-item>
         <a-list-item>
-          固定Header
-          <a-switch slot="actions" size="small" />
+          {{$t('navigate.fixedHeader')}}
+          <a-switch :checked="fixedHeader" slot="actions" size="small" @change="setFixedHeader" />
         </a-list-item>
         <a-list-item>
-          固定Siderbar
-          <a-switch slot="actions" size="small" />
+          {{$t('navigate.fixedSideBar')}}
+          <a-switch :checked="fixedSideBar" slot="actions" size="small" @change="setFixedSideBar" />
         </a-list-item>
       </a-list>
     </setting-item>
     <a-divider />
-    <setting-item title="其他设置">
+    <setting-item :title="$t('other.title')">
       <a-list :split="false">
         <a-list-item>
-          色弱模式
-          <a-switch slot="actions" size="small" />
+          {{$t('other.weekMode')}}
+          <a-switch :checked="weekMode" slot="actions" size="small" @change="setWeekMode" />
         </a-list-item>
         <a-list-item>
-          显示抽屉按钮
-          <a-switch slot="actions" size="small" />
+          {{$t('other.multiPages')}}
+          <a-switch :checked="multiPage" slot="actions" size="small" @change="setMultiPage" />
         </a-list-item>
         <a-list-item>
-          多页签模式
-          <a-switch :checked="multipage" slot="actions" size="small" @change="setMultipage" />
+          {{$t('other.hideSetting')}}
+          <a-switch :checked="hideSetting" slot="actions" size="small" @change="setHideSetting" />
         </a-list-item>
       </a-list>
     </setting-item>
     <a-divider />
-    <a-button id="copyBtn" data-clipboard-text="Sorry, you copy nothing O(∩_∩)O~" @click="copyCode" style="width: 100%" icon="copy" >拷贝代码</a-button>
-  </a-layout-sider>
+    <setting-item :title="$t('animate.title')">
+      <a-list :split="false">
+        <a-list-item>
+          {{$t('animate.disable')}}
+          <a-switch :checked="animate.disabled" slot="actions" size="small" @change="val => setAnimate({...animate, disabled: val})" />
+        </a-list-item>
+        <a-list-item>
+          {{$t('animate.effect')}}
+          <a-select
+            :value="animate.name"
+            :getPopupContainer="getPopupContainer"
+            @change="val => setAnimate({...animate, name: val})"
+            class="select-item" size="small" slot="actions"
+          >
+            <a-select-option :key="index" :value="item.name" v-for="(item, index) in animates">{{item.alias}}</a-select-option>
+          </a-select>
+        </a-list-item>
+        <a-list-item>
+          {{$t('animate.direction')}}
+          <a-select
+            :value="animate.direction"
+            :getPopupContainer="getPopupContainer"
+            @change="val => setAnimate({...animate, direction: val})"
+            class="select-item" size="small" slot="actions"
+          >
+            <a-select-option :key="index" :value="item" v-for="(item, index) in directions">{{item}}</a-select-option>
+          </a-select>
+        </a-list-item>
+      </a-list>
+    </setting-item>
+    <a-alert
+      v-if="isDev"
+      style="max-width: 240px; margin: -16px 0 8px; word-break: break-all"
+      type="warning"
+      :message="$t('alert')"
+    >
+    </a-alert>
+    <a-button v-if="isDev" id="copyBtn" :data-clipboard-text="copyConfig" @click="copyCode" style="width: 100%" icon="copy" >{{$t('copy')}}</a-button>
+  </div>
 </template>
 
 <script>
 import SettingItem from './SettingItem'
-import StyleItem from './StyleItem'
-import ColorCheckbox from '../checkbox/ColorCheckbox'
-import ImgCheckbox from '../checkbox/ImgCheckbox'
+import {ColorCheckbox, ImgCheckbox} from '@/components/checkbox'
 import Clipboard from 'clipboard'
+import { mapState, mapMutations } from 'vuex'
+import {formatConfig} from '@/utils/formatter'
+import {setting} from '@/config/default'
+import sysConfig from '@/config/config'
+import fastEqual from 'fast-deep-equal'
+import deepMerge from 'deepmerge'
 
 const ColorCheckboxGroup = ColorCheckbox.Group
 const ImgCheckboxGroup = ImgCheckbox.Group
-
 export default {
   name: 'Setting',
-  components: {ImgCheckboxGroup, ImgCheckbox, ColorCheckboxGroup, ColorCheckbox, StyleItem, SettingItem},
+  i18n: require('./i18n'),
+  components: {ImgCheckboxGroup, ImgCheckbox, ColorCheckboxGroup, ColorCheckbox, SettingItem},
+  data() {
+    return {
+      copyConfig: 'Sorry, you have copied nothing O(∩_∩)O~',
+      isDev: process.env.NODE_ENV === 'development'
+    }
+  },
   computed: {
-    multipage () {
-      return this.$store.state.setting.multipage
+    directions() {
+      return this.animates.find(item => item.name == this.animate.name).directions
+    },
+    ...mapState('setting', ['theme', 'layout', 'animate', 'animates', 'palettes', 'multiPage', 'weekMode', 'fixedHeader', 'fixedSideBar', 'hideSetting', 'pageWidth'])
+  },
+  watch: {
+    'animate.name': function(val) {
+      this.setAnimate({name: val, direction: this.directions[0]})
     }
   },
   methods: {
-    onColorChange (values, colors) {
-      if (colors.length > 0) {
-        this.$message.info(`您选择了主题色 ${colors}`)
-      }
-    },
-    setTheme (values) {
-      this.$store.commit('setting/setTheme', values[0])
-    },
-    setLayout (values) {
-      this.$store.commit('setting/setLayout', values[0])
+    getPopupContainer() {
+      return this.$el.parentNode
     },
     copyCode () {
+      let config = this.extractConfig(false)
+      this.copyConfig = `// 自定义配置，参考 ./default/setting.config.js，需要自定义的属性在这里配置即可
+      module.exports = ${formatConfig(config)}
+      `
       let clipboard = new Clipboard('#copyBtn')
-      const _this = this
-      clipboard.on('success', function () {
-        _this.$message.success(`复制成功`)
+      clipboard.on('success', () => {
+        this.$message.success(`复制成功，覆盖文件 src/config/config.js 然后重启项目即可生效`).then(() => {
+          const localConfig = localStorage.getItem(process.env.VUE_APP_SETTING_KEY)
+          if (localConfig) {
+            console.warn('检测到本地有历史保存的主题配置，想要要拷贝的配置代码生效，您可能需要先重置配置')
+            this.$message.warn('检测到本地有历史保存的主题配置，想要要拷贝的配置代码生效，您可能需要先重置配置', 5)
+          }
+        })
         clipboard.destroy()
       })
     },
-    setMultipage (checked) {
-      this.$store.commit('setting/setMultipage', checked)
-    }
+    saveSetting() {
+      const closeMessage = this.$message.loading('正在保存到本地，请稍后...', 0)
+      const config = this.extractConfig(true)
+      localStorage.setItem(process.env.VUE_APP_SETTING_KEY, JSON.stringify(config))
+      setTimeout(closeMessage, 800)
+    },
+    resetSetting() {
+      this.$confirm({
+        title: '重置主题会刷新页面，当前页面内容不会保留，确认重置？',
+        onOk() {
+          localStorage.removeItem(process.env.VUE_APP_SETTING_KEY)
+          window.location.reload()
+        }
+      })
+    },
+    //提取配置
+    extractConfig(local = false) {
+      let config = {}
+      let mySetting = this.$store.state.setting
+      let dftSetting = local ? deepMerge(setting, sysConfig) : setting
+      Object.keys(mySetting).forEach(key => {
+        const dftValue = dftSetting[key], myValue = mySetting[key]
+        if (dftValue != undefined && !fastEqual(dftValue, myValue)) {
+          config[key] = myValue
+        }
+      })
+      return config
+    },
+    ...mapMutations('setting', ['setTheme', 'setLayout', 'setMultiPage', 'setWeekMode',
+      'setFixedSideBar', 'setFixedHeader', 'setAnimate', 'setHideSetting', 'setPageWidth'])
   }
 }
 </script>
 
 <style lang="less" scoped>
-  .sider{
-    background-color: #fff;
-    height: 100%;
+  .side-setting{
+    min-height: 100%;
+    background-color: @base-bg-color;
     padding: 24px;
     font-size: 14px;
     line-height: 1.5;
@@ -122,6 +216,9 @@ export default {
     position: relative;
     .flex{
       display: flex;
+    }
+    .select-item{
+      width: 80px;
     }
   }
 </style>

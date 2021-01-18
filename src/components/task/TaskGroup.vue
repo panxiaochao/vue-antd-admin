@@ -49,9 +49,9 @@ export default {
   .task-group{
     width: 33.33%;
     padding: 8px 8px;
-    background-color: #e1e4e8;
+    background-color: @background-color-light;
     border-radius: 6px;
-    border: 1px solid #d1d4d8;
+    border: 1px solid @shadow-color;
     .task-head{
       margin-bottom: 8px;
       .title{
@@ -62,7 +62,7 @@ export default {
           margin: 0 8px;
           font-size: 12px;
           padding: 2px 6px;
-          background-color: rgba(27,31,35,0.15);
+          background-color: @base-bg-color;
         }
       }
       .actions{

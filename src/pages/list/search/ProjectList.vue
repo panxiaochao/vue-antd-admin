@@ -3,8 +3,9 @@
     <search-form />
     <a-list
       :grid='{ gutter: 24, xl: 4, lg: 3, md: 3, sm: 2, xs: 1 }'
+      style="margin: 0 -8px"
     >
-      <a-list-item :key="n" v-for="n in 8" style="padding: 0 12px">
+      <a-list-item :key="n" v-for="n in 8" style="padding: 0 8px">
         <a-card>
           <img slot="cover" src="https://gw.alipayobjects.com/zos/rmsportal/iZBVOIhGJiAnhplqjvZW.png" height="154"/>
           <a-card-meta title="Ant Design">
@@ -46,7 +47,7 @@ export default {
     line-height: 20px;
     height: 20px;
     & > span {
-      color: rgba(0,0,0,.45);
+      color: @text-color-second;
       flex: 1;
       font-size: 12px;
     }

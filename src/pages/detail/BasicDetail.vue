@@ -18,6 +18,7 @@
         <a-divider style="margin-bottom: 32px"/>
         <div class="title">退货商品</div>
         <a-table
+          row-key="id"
           style="margin-bottom: 24px"
           :columns="goodsColumns"
           :dataSource="goodsData"
@@ -199,7 +200,7 @@ export default {
 
 <style lang="less" scoped>
   .title {
-    color: rgba(0,0,0,.85);
+    color: @title-color;
     font-size: 16px;
     font-weight: 500;
     margin-bottom: 16px;

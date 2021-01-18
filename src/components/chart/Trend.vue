@@ -66,14 +66,13 @@ export default {
   .chart-trend{
     display: inline-block;
     font-size: 14px;
-    line-height: 22px;
     .chart-trend-icon{
       font-size: 12px;
       &.up{
-        color: #f5222d;
+        color: @red-6;
       }
       &.down{
-        color: #52c41a;
+        color: @green-6;
       }
     }
   }
